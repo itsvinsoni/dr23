@@ -11,14 +11,18 @@
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .modal { transition: opacity 0.25s ease; }
         body.modal-active { overflow-x: hidden; overflow-y: visible !important; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Custom Scrollbar for Table */
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+        
+        .gold-gradient { background: linear-gradient(135deg, #FFF7D1 0%, #FFD700 100%); border-color: #F6E05E; }
+        .silver-gradient { background: linear-gradient(135deg, #F7FAFC 0%, #CBD5E0 100%); border-color: #CBD5E0; }
+        .bronze-gradient { background: linear-gradient(135deg, #FFF5F5 0%, #ED8936 100%); border-color: #ED8936; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased selection:bg-teal-200 selection:text-teal-900">
@@ -42,7 +46,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8 max-w-6xl">
+    <main class="container mx-auto px-4 py-8 max-w-7xl">
 
         <!-- Stats Cards (Global) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -77,58 +81,84 @@
         </div>
 
         <!-- Controls Section -->
-        <div class="bg-white p-4 rounded-t-xl shadow-sm border border-gray-200 border-b-0">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 
-                <!-- Category Filters (Tabs) -->
+                <!-- View Switcher -->
                 <div class="flex bg-gray-100 p-1 rounded-lg w-full md:w-auto">
-                    <button onclick="filterCategory('all')" id="btn-all" class="flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-semibold transition-all shadow-sm bg-white text-teal-700">All</button>
-                    <button onclick="filterCategory('Triveni')" id="btn-triveni" class="flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-all">Triveni</button>
-                    <button onclick="filterCategory('MLD')" id="btn-mld" class="flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-all">MLD</button>
+                    <button onclick="switchView('list')" id="btn-view-list" class="flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-semibold shadow-sm bg-white text-teal-700 transition-all">
+                        <i class="fas fa-list mr-2"></i>Result List
+                    </button>
+                    <button onclick="switchView('toppers')" id="btn-view-toppers" class="flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-all">
+                        <i class="fas fa-trophy mr-2 text-yellow-500"></i>Toppers
+                    </button>
                 </div>
 
-                <!-- Search -->
-                <div class="relative w-full md:w-72 group">
-                    <input type="text" id="searchInput" placeholder="Search by Name or Roll No..." 
-                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition text-sm">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400 group-focus-within:text-teal-500 transition-colors"></i>
+                <!-- Filters (Only visible in List View) -->
+                <div id="list-filters" class="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center">
+                    <div class="flex bg-gray-100 p-1 rounded-lg w-full md:w-auto">
+                        <button onclick="filterCategory('all')" id="btn-all" class="px-4 py-1.5 rounded text-xs font-bold bg-white shadow text-teal-700">All</button>
+                        <button onclick="filterCategory('Triveni')" id="btn-triveni" class="px-4 py-1.5 rounded text-xs font-medium text-gray-600">Triveni</button>
+                        <button onclick="filterCategory('MLD')" id="btn-mld" class="px-4 py-1.5 rounded text-xs font-medium text-gray-600">MLD</button>
+                    </div>
+
+                    <div class="relative w-full md:w-64">
+                        <input type="text" id="searchInput" placeholder="Search..." 
+                            class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Table -->
-        <div class="bg-white rounded-b-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- LIST VIEW -->
+        <div id="view-list" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in">
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="min-w-full leading-normal">
                     <thead>
                         <tr>
-                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none" onclick="sortTable('roll')">
-                                Roll No <i class="fas fa-sort ml-1 text-gray-300"></i>
-                            </th>
-                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none" onclick="sortTable('name')">
-                                Student Name <i class="fas fa-sort ml-1 text-gray-300"></i>
-                            </th>
-                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none" onclick="sortTable('category')">
-                                College <i class="fas fa-sort ml-1 text-gray-300"></i>
-                            </th>
-                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors select-none" onclick="sortTable('status')">
-                                Status <i class="fas fa-sort ml-1 text-gray-300"></i>
-                            </th>
-                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                View
-                            </th>
+                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('roll')">Roll No <i class="fas fa-sort ml-1"></i></th>
+                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">Student Name <i class="fas fa-sort ml-1"></i></th>
+                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('category')">College <i class="fas fa-sort ml-1"></i></th>
+                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('status')">Status <i class="fas fa-sort ml-1"></i></th>
+                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">View</th>
                         </tr>
                     </thead>
-                    <tbody id="resultTableBody">
-                        <!-- Rows will be populated by JS -->
-                    </tbody>
+                    <tbody id="resultTableBody"></tbody>
                 </table>
             </div>
-            
-            <!-- Table Footer -->
             <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs text-gray-500">
                 <span>Showing <span id="showingCount" class="font-bold text-gray-700">0</span> students</span>
                 <span id="categoryLabel">All Colleges</span>
+            </div>
+        </div>
+
+        <!-- TOPPERS VIEW -->
+        <div id="view-toppers" class="hidden animate-fade-in">
+            <div class="grid md:grid-cols-2 gap-8">
+                
+                <!-- Triveni Column -->
+                <div class="bg-white rounded-xl shadow-lg border border-teal-100 overflow-hidden">
+                    <div class="bg-teal-700 p-4 text-white flex justify-between items-center">
+                        <h2 class="text-lg font-bold"><i class="fas fa-star mr-2 text-yellow-300"></i>Triveni College Toppers</h2>
+                        <span class="text-xs bg-white/20 px-2 py-1 rounded">Pass Only</span>
+                    </div>
+                    <div class="p-4 space-y-4" id="triveni-toppers-list">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+
+                <!-- MLD Column -->
+                <div class="bg-white rounded-xl shadow-lg border border-teal-100 overflow-hidden">
+                    <div class="bg-indigo-700 p-4 text-white flex justify-between items-center">
+                        <h2 class="text-lg font-bold"><i class="fas fa-star mr-2 text-yellow-300"></i>MLD College Toppers</h2>
+                        <span class="text-xs bg-white/20 px-2 py-1 rounded">Pass Only</span>
+                    </div>
+                    <div class="p-4 space-y-4" id="mld-toppers-list">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+
             </div>
         </div>
         
@@ -136,26 +166,14 @@
 
     <!-- Modal (Result Popup) -->
     <div id="resultModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
-        <!-- Backdrop -->
         <div class="modal-overlay absolute w-full h-full bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-        
-        <!-- Modal Content -->
         <div class="modal-container bg-white w-full max-w-sm md:max-w-md mx-4 rounded-2xl shadow-2xl z-50 overflow-hidden transform transition-all scale-95 duration-300">
-            
-            <!-- Modal Header -->
             <div class="bg-teal-700 p-4 text-white flex justify-between items-center">
                 <h3 class="font-bold text-lg">Student Result</h3>
-                <button onclick="closeModal()" class="hover:bg-teal-600 rounded-full p-1 w-8 h-8 flex items-center justify-center transition">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button onclick="closeModal()" class="hover:bg-teal-600 rounded-full p-1 w-8 h-8 flex items-center justify-center transition"><i class="fas fa-times"></i></button>
             </div>
-
-            <!-- Modal Body -->
             <div class="p-6 text-center">
-                <div id="modalIcon" class="mb-4 transform transition-transform hover:scale-110 duration-200">
-                    <!-- Icon injected by JS -->
-                </div>
-                
+                <div id="modalIcon" class="mb-4 transform transition-transform hover:scale-110 duration-200"></div>
                 <h2 id="modalName" class="text-xl font-bold text-gray-800 mb-1 leading-tight">Student Name</h2>
                 <div class="inline-block bg-gray-100 rounded-full px-3 py-1 text-xs font-mono text-gray-600 mb-6 border border-gray-200">
                     Roll No: <span id="modalRoll">12345</span>
@@ -166,34 +184,53 @@
                         <span class="text-gray-500 text-sm font-medium">College</span>
                         <span id="modalCategory" class="text-gray-800 text-sm font-semibold bg-white px-2 py-0.5 rounded border border-gray-200">Triveni</span>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500 text-sm font-medium">Session</span>
-                        <span class="text-gray-800 text-sm font-semibold">2023-24</span>
-                    </div>
-                     <div class="flex justify-between items-center border-t border-gray-200 pt-3 mt-1">
+                    <div class="flex justify-between items-center border-t border-gray-200 pt-3 mt-1">
                         <span class="text-gray-700 font-bold text-base">RESULT</span>
                         <span id="modalStatus" class="font-bold text-2xl tracking-wide">PASS</span>
                     </div>
+                    
+                    <!-- Marks Section (Only for Pass) -->
+                    <div id="modalMarksContainer" class="hidden mt-4 pt-3 border-t border-gray-200">
+                         <p class="text-xs font-bold text-gray-500 uppercase mb-2">Subject Marks breakdown</p>
+                         <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                             <div class="bg-white p-2 rounded border">
+                                 <div class="font-bold text-teal-700" id="markAnat">-</div>
+                                 <div class="text-[10px] text-gray-500">Anatomy</div>
+                             </div>
+                             <div class="bg-white p-2 rounded border">
+                                 <div class="font-bold text-teal-700" id="markHema">-</div>
+                                 <div class="text-[10px] text-gray-500">Hematology</div>
+                             </div>
+                             <div class="bg-white p-2 rounded border">
+                                 <div class="font-bold text-teal-700" id="markPath">-</div>
+                                 <div class="text-[10px] text-gray-500">Pathology</div>
+                             </div>
+                         </div>
+                         <div class="mt-3 bg-teal-50 p-2 rounded border border-teal-100 flex justify-between items-center">
+                             <span class="text-sm font-bold text-teal-800">Total Marks</span>
+                             <span class="text-lg font-bold text-teal-800" id="markTotal">- / 1150</span>
+                         </div>
+                    </div>
                 </div>
-                
-                <p class="text-[10px] text-gray-400 mt-6 italic">
-                    Disclaimer: This is an informal result based on the provided list. Please verify with official Council marksheets.
-                </p>
             </div>
-
-            <!-- Modal Footer -->
             <div class="bg-gray-50 p-4 border-t border-gray-100">
-                <button onclick="closeModal()" class="w-full py-2.5 bg-gray-800 text-white rounded-lg font-medium shadow-lg hover:bg-gray-900 active:transform active:scale-95 transition-all">
-                    Close
-                </button>
+                <button onclick="closeModal()" class="w-full py-2.5 bg-gray-800 text-white rounded-lg font-medium shadow-lg hover:bg-gray-900 transition-all">Close</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Data Source
+        // Data Source (Enriched with marks for PASS students)
         const studentsData = [
-            // List 1 (3369xx Series) - Category: MLD
+            // --- MLD COLLEGE (Total 41: 6 Pass, 35 Fail) ---
+            { roll: 336989, name: "Gauri Sharma", status: "PASS", category: "MLD", marks: {anat: 45, hema: 45, path: 58, total: 881} },
+            { roll: 336994, name: "Kiran Saini", status: "PASS", category: "MLD", marks: {anat: 46, hema: 56, path: 49, total: 761} },
+            { roll: 336995, name: "Kirtika Dadhich", status: "PASS", category: "MLD", marks: {anat: 45, hema: 49, path: 50, total: 677} },
+            { roll: 336998, name: "Manish Gurjar", status: "PASS", category: "MLD", marks: {anat: 45, hema: 55, path: 54, total: 681} },
+            { roll: 337015, name: "Shalu Prajapati", status: "PASS", category: "MLD", marks: {anat: 63, hema: 60, path: 53, total: 769} },
+            { roll: 337023, name: "Zheer Ahmed", status: "PASS", category: "MLD", marks: {anat: 49, hema: 62, path: 49, total: 737} },
+            
+            // MLD Failures
             { roll: 336965, name: "Rakesh Baloda", status: "FAIL", category: "MLD" },
             { roll: 336983, name: "Amisha Meena", status: "FAIL", category: "MLD" },
             { roll: 336984, name: "Anjali Teli", status: "FAIL", category: "MLD" },
@@ -201,16 +238,12 @@
             { roll: 336986, name: "Bajrang Lal Dhakar", status: "FAIL", category: "MLD" },
             { roll: 336987, name: "Bhupendra Kumar Lodha", status: "FAIL", category: "MLD" },
             { roll: 336988, name: "Foranta Choudhary", status: "FAIL", category: "MLD" },
-            { roll: 336989, name: "Gauri Sharma", status: "PASS", category: "MLD" },
             { roll: 336990, name: "Himanshu Sharma", status: "FAIL", category: "MLD" },
             { roll: 336991, name: "Kanchan Choudhary", status: "FAIL", category: "MLD" },
             { roll: 336992, name: "Kavita Bairwa", status: "FAIL", category: "MLD" },
             { roll: 336993, name: "Khushboo Sharma", status: "FAIL", category: "MLD" },
-            { roll: 336994, name: "Kiran Saini", status: "PASS", category: "MLD" },
-            { roll: 336995, name: "Kirtika Dadhich", status: "PASS", category: "MLD" },
             { roll: 336996, name: "Kishan Mali", status: "FAIL", category: "MLD" },
             { roll: 336997, name: "Komal Ghusar", status: "FAIL", category: "MLD" },
-            { roll: 336998, name: "Manish Gurjar", status: "PASS", category: "MLD" },
             { roll: 336999, name: "Manoj Kumar Verma", status: "FAIL", category: "MLD" },
             { roll: 337001, name: "Naresh", status: "FAIL", category: "MLD" },
             { roll: 337002, name: "Niharika Prajapat", status: "FAIL", category: "MLD" },
@@ -226,7 +259,6 @@
             { roll: 337012, name: "Sakshi", status: "FAIL", category: "MLD" },
             { roll: 337013, name: "Saloni Kumawat", status: "FAIL", category: "MLD" },
             { roll: 337014, name: "Seema Choudhary", status: "FAIL", category: "MLD" },
-            { roll: 337015, name: "Shalu Prajapati", status: "PASS", category: "MLD" },
             { roll: 337016, name: "Shankar Gurjar", status: "FAIL", category: "MLD" },
             { roll: 337017, name: "Tamanna Bano", status: "FAIL", category: "MLD" },
             { roll: 337018, name: "Vijay Kumar Meena", status: "FAIL", category: "MLD" },
@@ -234,9 +266,17 @@
             { roll: 337020, name: "Vikas Kumar Mina", status: "FAIL", category: "MLD" },
             { roll: 337021, name: "Yuvraj", status: "FAIL", category: "MLD" },
             { roll: 337022, name: "Yuvraj Singh Rawat", status: "FAIL", category: "MLD" },
-            { roll: 337023, name: "Zheer Ahmed", status: "PASS", category: "MLD" },
+
+            // --- TRIVENI COLLEGE (Total 47: 7 Pass, 40 Fail) ---
+            { roll: 341150, name: "Sapna Regar", status: "PASS", category: "Triveni", marks: {anat: 54, hema: 56, path: 64, total: 827} },
+            { roll: 341142, name: "Rajendra Gurjar", status: "PASS", category: "Triveni", marks: {anat: 57, hema: 45, path: 56, total: 821} },
+            { roll: 341123, name: "Kamlesh Bairwa", status: "PASS", category: "Triveni", marks: {anat: 41, hema: 46, path: 56, total: 802} },
+            { roll: 341138, name: "Payal Choudhary", status: "PASS", category: "Triveni", marks: {anat: 70, hema: 42, path: 45, total: 797} },
+            { roll: 341120, name: "Kailash", status: "PASS", category: "Triveni", marks: {anat: 64, hema: 41, path: 46, total: 748} },
+            { roll: 341137, name: "Ojasvi Jain", status: "PASS", category: "Triveni", marks: {anat: 49, hema: 45, path: 41, total: 748} },
+            { roll: 341121, name: "Kajol Sen", status: "PASS", category: "Triveni", marks: {anat: 45, hema: 46, path: 63, total: 741} },
             
-            // List 2 (Triveni / 3411xx Series) - Category: Triveni
+            // Triveni Failures
             { roll: 341108, name: "Abhishek Kumawat", status: "FAIL", category: "Triveni" },
             { roll: 341109, name: "Akshita Vaishnav", status: "FAIL", category: "Triveni" },
             { roll: 341110, name: "Anirudd Sankhala", status: "FAIL", category: "Triveni" },
@@ -249,10 +289,7 @@
             { roll: 341117, name: "Dilkhush Prajapat", status: "FAIL", category: "Triveni" },
             { roll: 341118, name: "Dinesh Prajapat", status: "FAIL", category: "Triveni" },
             { roll: 341119, name: "Hameed Kathat", status: "FAIL", category: "Triveni" },
-            { roll: 341120, name: "Kailash", status: "PASS", category: "Triveni" },
-            { roll: 341121, name: "Kajol Sen", status: "PASS", category: "Triveni" },
             { roll: 341122, name: "Kamal Choudhary", status: "FAIL", category: "Triveni" },
-            { roll: 341123, name: "Kamlesh Bairwa", status: "PASS", category: "Triveni" },
             { roll: 341124, name: "Kapil Sharma", status: "FAIL", category: "Triveni" },
             { roll: 341125, name: "Khushbu Kumari Saini", status: "FAIL", category: "Triveni" },
             { roll: 341126, name: "Komal Kumari Nath", status: "FAIL", category: "Triveni" },
@@ -266,12 +303,9 @@
             { roll: 341134, name: "Mohammad Junaid", status: "FAIL", category: "Triveni" },
             { roll: 341135, name: "Mohit Kumar Saini", status: "FAIL", category: "Triveni" },
             { roll: 341136, name: "Ms. Ruchika Sharma", status: "FAIL", category: "Triveni" },
-            { roll: 341137, name: "Ojasvi Jain", status: "PASS", category: "Triveni" },
-            { roll: 341138, name: "Payal Choudhary", status: "PASS", category: "Triveni" },
             { roll: 341139, name: "Priyadarshni Rathore", status: "FAIL", category: "Triveni" },
             { roll: 341140, name: "Priyanka Bairwa", status: "FAIL", category: "Triveni" },
             { roll: 341141, name: "Radhika Mali", status: "FAIL", category: "Triveni" },
-            { roll: 341142, name: "Rajendra Gurjar", status: "PASS", category: "Triveni" },
             { roll: 341143, name: "Rakesh Kumawat", status: "FAIL", category: "Triveni" },
             { roll: 341144, name: "Ram Avtar Dhaker", status: "FAIL", category: "Triveni" },
             { roll: 341145, name: "Ravi Kumar Mali", status: "FAIL", category: "Triveni" },
@@ -279,177 +313,211 @@
             { roll: 341147, name: "Rena Dhakar", status: "FAIL", category: "Triveni" },
             { roll: 341148, name: "Renuka Vaishnav", status: "FAIL", category: "Triveni" },
             { roll: 341149, name: "Sapna Kumari", status: "FAIL", category: "Triveni" },
-            { roll: 341150, name: "Sapna Regar", status: "PASS", category: "Triveni" },
             { roll: 341151, name: "Sourabh Dadhich", status: "FAIL", category: "Triveni" },
             { roll: 341152, name: "Sourabh Sharma", status: "FAIL", category: "Triveni" },
             { roll: 341153, name: "Subash Puniya", status: "FAIL", category: "Triveni" },
             { roll: 341154, name: "Vandna Rao", status: "FAIL", category: "Triveni" }
         ];
 
-        // State
         let currentFilter = 'all';
         let sortDirection = { roll: 'asc', name: 'asc', status: 'asc', category: 'asc' };
 
-        // DOM Elements
+        // DOM
         const tableBody = document.getElementById('resultTableBody');
         const searchInput = document.getElementById('searchInput');
         const modal = document.getElementById('resultModal');
-        const btnAll = document.getElementById('btn-all');
-        const btnTriveni = document.getElementById('btn-triveni');
-        const btnMld = document.getElementById('btn-mld');
+        const listFilters = document.getElementById('list-filters');
+        
+        // Views
+        const viewList = document.getElementById('view-list');
+        const viewToppers = document.getElementById('view-toppers');
+        const btnViewList = document.getElementById('btn-view-list');
+        const btnViewToppers = document.getElementById('btn-view-toppers');
 
-        // Initialize
         function init() {
             filterCategory('all');
+            renderToppers();
+        }
+
+        // View Switcher
+        function switchView(viewName) {
+            if (viewName === 'list') {
+                viewList.classList.remove('hidden');
+                viewToppers.classList.add('hidden');
+                listFilters.classList.remove('hidden'); // Show search/filter
+                
+                btnViewList.classList.add('bg-white', 'text-teal-700', 'shadow-sm');
+                btnViewList.classList.remove('text-gray-600');
+                btnViewToppers.classList.remove('bg-white', 'text-teal-700', 'shadow-sm');
+                btnViewToppers.classList.add('text-gray-600');
+            } else {
+                viewList.classList.add('hidden');
+                viewToppers.classList.remove('hidden');
+                listFilters.classList.add('hidden'); // Hide search/filter
+                
+                btnViewToppers.classList.add('bg-white', 'text-teal-700', 'shadow-sm');
+                btnViewToppers.classList.remove('text-gray-600');
+                btnViewList.classList.remove('bg-white', 'text-teal-700', 'shadow-sm');
+                btnViewList.classList.add('text-gray-600');
+            }
         }
 
         // Filter Logic
         function filterCategory(category) {
             currentFilter = category;
             
-            // Update Buttons UI
-            [btnAll, btnTriveni, btnMld].forEach(btn => {
-                btn.classList.remove('bg-white', 'text-teal-700', 'shadow-sm');
+            // Buttons UI
+            ['btn-all', 'btn-triveni', 'btn-mld'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.classList.remove('bg-white', 'text-teal-700', 'shadow');
                 btn.classList.add('text-gray-600');
             });
 
-            let activeBtn;
-            if(category === 'all') activeBtn = btnAll;
-            else if(category === 'Triveni') activeBtn = btnTriveni;
-            else activeBtn = btnMld;
-
-            activeBtn.classList.add('bg-white', 'text-teal-700', 'shadow-sm');
+            let activeBtnId = category === 'all' ? 'btn-all' : (category === 'Triveni' ? 'btn-triveni' : 'btn-mld');
+            const activeBtn = document.getElementById(activeBtnId);
+            activeBtn.classList.add('bg-white', 'text-teal-700', 'shadow');
             activeBtn.classList.remove('text-gray-600');
 
             applyFilters();
         }
 
-        // Apply Search and Category Filters
         function applyFilters() {
             const searchTerm = searchInput.value.toLowerCase();
-            
             const filteredData = studentsData.filter(student => {
                 const matchesCategory = currentFilter === 'all' || student.category === currentFilter;
                 const matchesSearch = student.name.toLowerCase().includes(searchTerm) || 
                                       student.roll.toString().includes(searchTerm);
                 return matchesCategory && matchesSearch;
             });
-
             updateStats(filteredData);
             renderTable(filteredData);
             
-            // Update table footer label
             const label = currentFilter === 'all' ? 'All Colleges' : (currentFilter === 'Triveni' ? 'Triveni College' : 'MLD College');
             document.getElementById('categoryLabel').innerText = label;
         }
 
-        // Stats Calculation
         function updateStats(data) {
             const total = data.length;
             const pass = data.filter(s => s.status === 'PASS').length;
             const fail = data.filter(s => s.status === 'FAIL').length;
             const percent = total > 0 ? ((pass / total) * 100).toFixed(1) : "0.0";
 
-            // Animate Numbers
-            animateValue("totalCount", parseInt(document.getElementById('totalCount').innerText), total, 500);
-            animateValue("passCount", parseInt(document.getElementById('passCount').innerText), pass, 500);
-            animateValue("failCount", parseInt(document.getElementById('failCount').innerText), fail, 500);
+            document.getElementById('totalCount').innerText = total;
+            document.getElementById('passCount').innerText = pass;
+            document.getElementById('failCount').innerText = fail;
             document.getElementById('passPercent').innerText = percent + "%";
             document.getElementById('showingCount').innerText = total;
         }
 
-        function animateValue(id, start, end, duration) {
-            if (start === end) return;
-            const obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        // Render Table
         function renderTable(data) {
             tableBody.innerHTML = '';
-
             if (data.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="py-12 text-center">
-                            <div class="flex flex-col items-center text-gray-400">
-                                <i class="fas fa-folder-open text-4xl mb-3"></i>
-                                <p class="text-sm">No records found matching your criteria</p>
-                            </div>
-                        </td>
-                    </tr>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-gray-400">No records found</td></tr>`;
                 return;
             }
 
             data.forEach((student, index) => {
                 const isPass = student.status === 'PASS';
-                
-                // Status Badge
                 const statusBadge = isPass 
                     ? `<span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-100 text-green-700 border border-green-200"><i class="fas fa-check mr-1 mt-0.5"></i> PASS</span>`
                     : `<span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-100 text-red-700 border border-red-200"><i class="fas fa-times mr-1 mt-0.5"></i> FAIL</span>`;
                 
-                // Category Badge
                 const catColor = student.category === 'Triveni' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-orange-50 text-orange-700 border-orange-100';
                 
                 const row = document.createElement('tr');
                 row.className = "hover:bg-gray-50 transition duration-150 cursor-pointer border-b border-gray-100 animate-fade-in";
-                row.style.animationDelay = `${index * 0.03}s`; // Staggered animation
+                row.style.animationDelay = `${index * 0.01}s`;
                 row.onclick = () => openModal(student);
                 
                 row.innerHTML = `
                     <td class="px-6 py-4 text-sm font-mono text-gray-600 font-medium">${student.roll}</td>
                     <td class="px-6 py-4 text-sm font-bold text-gray-700">${student.name}</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wide rounded border ${catColor}">
-                            ${student.category}
-                        </span>
-                    </td>
+                    <td class="px-6 py-4 text-center"><span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wide rounded border ${catColor}">${student.category}</span></td>
                     <td class="px-6 py-4 text-center">${statusBadge}</td>
-                    <td class="px-6 py-4 text-center">
-                        <button class="text-teal-600 hover:text-teal-800 transition transform hover:scale-110">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </td>
+                    <td class="px-6 py-4 text-center"><button class="text-teal-600 hover:text-teal-800 transition transform hover:scale-110"><i class="fas fa-chevron-right"></i></button></td>
                 `;
                 tableBody.appendChild(row);
             });
         }
 
-        // Search Listener
+        // --- Toppers Logic ---
+        function renderToppers() {
+            // Filter PASS students only
+            const passStudents = studentsData.filter(s => s.status === 'PASS' && s.marks);
+
+            // Separate and sort by Total Marks
+            const triveniToppers = passStudents.filter(s => s.category === 'Triveni').sort((a, b) => b.marks.total - a.marks.total);
+            const mldToppers = passStudents.filter(s => s.category === 'MLD').sort((a, b) => b.marks.total - a.marks.total);
+
+            // Render Function
+            const createCard = (student, index) => {
+                let rankBadge = `<span class="bg-gray-200 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center font-bold border border-gray-300">#${index+1}</span>`;
+                let cardClass = "bg-white border-gray-200";
+
+                if (index === 0) {
+                    rankBadge = `<div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg text-lg gold-gradient">🥇</div>`;
+                    cardClass = "border-yellow-200 bg-yellow-50/50";
+                } else if (index === 1) {
+                    rankBadge = `<div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg text-lg silver-gradient">🥈</div>`;
+                    cardClass = "border-gray-200 bg-gray-50/50";
+                } else if (index === 2) {
+                    rankBadge = `<div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg text-lg bronze-gradient">🥉</div>`;
+                    cardClass = "border-orange-200 bg-orange-50/50";
+                }
+
+                // Percentage Calculation (Total / 1150 * 100)
+                const percentage = ((student.marks.total / 1150) * 100).toFixed(2);
+
+                return `
+                <div class="flex items-center gap-4 p-4 rounded-lg border shadow-sm ${cardClass} hover:shadow-md transition-shadow cursor-pointer" onclick='openModal(${JSON.stringify(student)})'>
+                    <div class="flex-shrink-0">${rankBadge}</div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-gray-800 text-lg leading-none">${student.name}</h4>
+                        <div class="text-xs text-gray-500 font-mono mt-1">Roll: ${student.roll}</div>
+                        
+                        <div class="grid grid-cols-3 gap-2 mt-3 text-center">
+                            <div class="bg-white/60 rounded px-1 py-0.5 border border-gray-100">
+                                <div class="text-[10px] text-gray-500 uppercase">Anat</div>
+                                <div class="font-bold text-sm text-teal-700">${student.marks.anat}</div>
+                            </div>
+                            <div class="bg-white/60 rounded px-1 py-0.5 border border-gray-100">
+                                <div class="text-[10px] text-gray-500 uppercase">Hema</div>
+                                <div class="font-bold text-sm text-teal-700">${student.marks.hema}</div>
+                            </div>
+                            <div class="bg-white/60 rounded px-1 py-0.5 border border-gray-100">
+                                <div class="text-[10px] text-gray-500 uppercase">Path</div>
+                                <div class="font-bold text-sm text-teal-700">${student.marks.path}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center pl-2 border-l border-gray-200/50 min-w-[80px]">
+                        <div class="text-[10px] uppercase font-bold text-gray-400">Total</div>
+                        <div class="text-xl font-bold text-teal-600">${student.marks.total}</div>
+                        <div class="text-xs font-bold text-indigo-600 mt-1 bg-indigo-50 rounded px-1">${percentage}%</div>
+                    </div>
+                </div>`;
+            };
+
+            document.getElementById('triveni-toppers-list').innerHTML = triveniToppers.map((s, i) => createCard(s, i)).join('');
+            document.getElementById('mld-toppers-list').innerHTML = mldToppers.map((s, i) => createCard(s, i)).join('');
+        }
+
         searchInput.addEventListener('input', applyFilters);
 
-        // Sort Function
         function sortTable(key) {
             const dir = sortDirection[key] === 'asc' ? 'desc' : 'asc';
             sortDirection[key] = dir;
-            
-            // We need to sort the FULL list or filtered list? Better sort full list then re-filter
             studentsData.sort((a, b) => {
-                let valA = a[key];
-                let valB = b[key];
-                
+                let valA = a[key], valB = b[key];
                 if (typeof valA === 'string') valA = valA.toLowerCase();
                 if (typeof valB === 'string') valB = valB.toLowerCase();
-
                 if (valA < valB) return dir === 'asc' ? -1 : 1;
                 if (valA > valB) return dir === 'asc' ? 1 : -1;
                 return 0;
             });
-            
-            applyFilters(); // Re-render
+            applyFilters();
         }
 
-        // Modal Functions
         function openModal(student) {
             const isPass = student.status === 'PASS';
             const statusColor = isPass ? 'text-green-600' : 'text-red-600';
@@ -464,32 +532,36 @@
             document.getElementById('modalCategory').innerText = student.category;
             document.getElementById('modalIcon').innerHTML = icon;
 
+            // Handle Marks Display
+            const marksContainer = document.getElementById('modalMarksContainer');
+            if (isPass && student.marks) {
+                marksContainer.classList.remove('hidden');
+                document.getElementById('markAnat').innerText = student.marks.anat;
+                document.getElementById('markHema').innerText = student.marks.hema;
+                document.getElementById('markPath').innerText = student.marks.path;
+                document.getElementById('markTotal').innerText = `${student.marks.total} / 1150`;
+            } else {
+                marksContainer.classList.add('hidden');
+            }
+
             modal.classList.remove('opacity-0', 'pointer-events-none');
-            // Add scale effect class if needed
             modal.querySelector('.modal-container').classList.remove('scale-95');
             modal.querySelector('.modal-container').classList.add('scale-100');
-            
             document.body.classList.add('modal-active');
         }
 
         function closeModal() {
             modal.querySelector('.modal-container').classList.remove('scale-100');
             modal.querySelector('.modal-container').classList.add('scale-95');
-            
             setTimeout(() => {
                 modal.classList.add('opacity-0', 'pointer-events-none');
                 document.body.classList.remove('modal-active');
             }, 100);
         }
 
-        // Close on Esc
-        document.onkeydown = function(evt) {
-            if (evt.keyCode == 27) closeModal();
-        };
+        document.onkeydown = function(evt) { if (evt.keyCode == 27) closeModal(); };
 
-        // Run
         init();
-
     </script>
 </body>
 </html>
