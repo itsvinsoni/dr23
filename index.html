@@ -120,6 +120,7 @@
                             <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('roll')">Roll No <i class="fas fa-sort ml-1"></i></th>
                             <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">Student Name <i class="fas fa-sort ml-1"></i></th>
                             <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('category')">College <i class="fas fa-sort ml-1"></i></th>
+                            <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('total')">Total (%) <i class="fas fa-sort ml-1"></i></th>
                             <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('status')">Status <i class="fas fa-sort ml-1"></i></th>
                             <th class="px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">View</th>
                         </tr>
@@ -188,6 +189,12 @@
                         <span class="text-gray-700 font-bold text-base">RESULT</span>
                         <span id="modalStatus" class="font-bold text-2xl tracking-wide">PASS</span>
                     </div>
+
+                    <!-- Remark Section (For Failures) -->
+                    <div id="modalRemarkContainer" class="hidden mt-4 pt-3 border-t border-gray-200 text-center">
+                         <p class="text-xs font-bold text-red-500 uppercase mb-1">Remarks</p>
+                         <p id="modalRemark" class="text-sm text-gray-700 font-medium bg-red-50 p-2 rounded border border-red-100">Back in Subjects</p>
+                    </div>
                     
                     <!-- Marks Section (Only for Pass) -->
                     <div id="modalMarksContainer" class="hidden mt-4 pt-3 border-t border-gray-200">
@@ -208,7 +215,10 @@
                          </div>
                          <div class="mt-3 bg-teal-50 p-2 rounded border border-teal-100 flex justify-between items-center">
                              <span class="text-sm font-bold text-teal-800">Total Marks</span>
-                             <span class="text-lg font-bold text-teal-800" id="markTotal">- / 1150</span>
+                             <div class="text-right">
+                                <span class="text-lg font-bold text-teal-800 block" id="markTotal">- / 1150</span>
+                                <span class="text-xs font-bold text-indigo-600 block" id="markPercent">0%</span>
+                             </div>
                          </div>
                     </div>
                 </div>
@@ -220,107 +230,112 @@
     </div>
 
     <script>
-        // Data Source (Enriched with marks for PASS students)
+        // Data Source
         const studentsData = [
-            // --- MLD COLLEGE (Total 41: 6 Pass, 35 Fail) ---
-            { roll: 336989, name: "Gauri Sharma", status: "PASS", category: "MLD", marks: {anat: 45, hema: 45, path: 58, total: 881} },
-            { roll: 336994, name: "Kiran Saini", status: "PASS", category: "MLD", marks: {anat: 46, hema: 56, path: 49, total: 761} },
-            { roll: 336995, name: "Kirtika Dadhich", status: "PASS", category: "MLD", marks: {anat: 45, hema: 49, path: 50, total: 677} },
-            { roll: 336998, name: "Manish Gurjar", status: "PASS", category: "MLD", marks: {anat: 45, hema: 55, path: 54, total: 681} },
-            { roll: 337015, name: "Shalu Prajapati", status: "PASS", category: "MLD", marks: {anat: 63, hema: 60, path: 53, total: 769} },
-            { roll: 337023, name: "Zheer Ahmed", status: "PASS", category: "MLD", marks: {anat: 49, hema: 62, path: 49, total: 737} },
-            
-            // MLD Failures
-            { roll: 336965, name: "Rakesh Baloda", status: "FAIL", category: "MLD" },
-            { roll: 336983, name: "Amisha Meena", status: "FAIL", category: "MLD" },
-            { roll: 336984, name: "Anjali Teli", status: "FAIL", category: "MLD" },
-            { roll: 336985, name: "Ayushi Ojha", status: "FAIL", category: "MLD" },
-            { roll: 336986, name: "Bajrang Lal Dhakar", status: "FAIL", category: "MLD" },
-            { roll: 336987, name: "Bhupendra Kumar Lodha", status: "FAIL", category: "MLD" },
-            { roll: 336988, name: "Foranta Choudhary", status: "FAIL", category: "MLD" },
-            { roll: 336990, name: "Himanshu Sharma", status: "FAIL", category: "MLD" },
-            { roll: 336991, name: "Kanchan Choudhary", status: "FAIL", category: "MLD" },
-            { roll: 336992, name: "Kavita Bairwa", status: "FAIL", category: "MLD" },
-            { roll: 336993, name: "Khushboo Sharma", status: "FAIL", category: "MLD" },
-            { roll: 336996, name: "Kishan Mali", status: "FAIL", category: "MLD" },
-            { roll: 336997, name: "Komal Ghusar", status: "FAIL", category: "MLD" },
-            { roll: 336999, name: "Manoj Kumar Verma", status: "FAIL", category: "MLD" },
-            { roll: 337001, name: "Naresh", status: "FAIL", category: "MLD" },
-            { roll: 337002, name: "Niharika Prajapat", status: "FAIL", category: "MLD" },
-            { roll: 337003, name: "Nikita Chhipa", status: "FAIL", category: "MLD" },
-            { roll: 337004, name: "Nitesh Kumar Verma", status: "FAIL", category: "MLD" },
-            { roll: 337005, name: "Pooja Gurjar", status: "FAIL", category: "MLD" },
-            { roll: 337006, name: "Prachi Joshi", status: "FAIL", category: "MLD" },
-            { roll: 337007, name: "Priyanka Bheel", status: "FAIL", category: "MLD" },
-            { roll: 337008, name: "Ramphool Gurjar", status: "FAIL", category: "MLD" },
-            { roll: 337009, name: "Rekha Kumari Kumawat", status: "FAIL", category: "MLD" },
-            { roll: 337010, name: "Ritu Raj Regar", status: "FAIL", category: "MLD" },
-            { roll: 337011, name: "Saddam Husain", status: "FAIL", category: "MLD" },
-            { roll: 337012, name: "Sakshi", status: "FAIL", category: "MLD" },
-            { roll: 337013, name: "Saloni Kumawat", status: "FAIL", category: "MLD" },
-            { roll: 337014, name: "Seema Choudhary", status: "FAIL", category: "MLD" },
-            { roll: 337016, name: "Shankar Gurjar", status: "FAIL", category: "MLD" },
-            { roll: 337017, name: "Tamanna Bano", status: "FAIL", category: "MLD" },
-            { roll: 337018, name: "Vijay Kumar Meena", status: "FAIL", category: "MLD" },
-            { roll: 337019, name: "Vijayraj Meghwal", status: "FAIL", category: "MLD" },
-            { roll: 337020, name: "Vikas Kumar Mina", status: "FAIL", category: "MLD" },
-            { roll: 337021, name: "Yuvraj", status: "FAIL", category: "MLD" },
-            { roll: 337022, name: "Yuvraj Singh Rawat", status: "FAIL", category: "MLD" },
+            // --- MLD COLLEGE (Total 48 Students) ---
+            { roll: 336976, name: "Aarif Mohammad", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: '-', hema: '-', path: '-', total: 762} },
+            { roll: 336977, name: "Aarti Choudhary", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: '-', hema: '-', path: '-', total: 859} },
+            { roll: 336978, name: "Abhijit Sen", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: '-', hema: '-', path: '-', total: 811} },
+            { roll: 336979, name: "Abhishek Prajapat", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: '-', hema: '-', path: '-', total: 869} },
+            { roll: 336980, name: "Aman Bareth", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 553} },
+            { roll: 336981, name: "Aman Sharma", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: '-', hema: '-', path: '-', total: 739} },
+            { roll: 336982, name: "Amar Singh", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 712} },
+            { roll: 336983, name: "Amisha Meena", status: "FAIL", category: "MLD", remark: "Back in Anat", marks: {anat: '-', hema: '-', path: '-', total: 809} },
+            { roll: 336984, name: "Anjali Teli", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 710} },
+            { roll: 336985, name: "Ayushi Ojha", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 775} },
+            { roll: 336986, name: "Bajrang Lal Dhakar", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 560} },
+            { roll: 336987, name: "Bhupendra Kumar Lodha", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 526} },
+            { roll: 336988, name: "Foranta Choudhary", status: "FAIL", category: "MLD", remark: "Back in Hema, Path", marks: {anat: '-', hema: '-', path: '-', total: 721} },
+            { roll: 336989, name: "Gauri Sharma", status: "PASS", category: "MLD", remark: "Topper (Clear)", marks: {anat: 45, hema: 45, path: 58, total: 881} }, 
+            { roll: 336990, name: "Himanshu Sharma", status: "FAIL", category: "MLD", remark: "Back in Hema, Path", marks: {anat: '-', hema: '-', path: '-', total: 683} },
+            { roll: 336991, name: "Kanchan Choudhary", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 699} },
+            { roll: 336992, name: "Kavita Bairwa", status: "FAIL", category: "MLD", remark: "Back in Path", marks: {anat: '-', hema: '-', path: '-', total: 719} },
+            { roll: 336993, name: "Khushboo Sharma", status: "FAIL", category: "MLD", remark: "Back in Path", marks: {anat: '-', hema: '-', path: '-', total: 737} },
+            { roll: 336994, name: "Kiran Saini", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: 46, hema: 56, path: 49, total: 761} },
+            { roll: 336995, name: "Kirtika Dadhich", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: 45, hema: 49, path: 50, total: 677} },
+            { roll: 336996, name: "Kishan Mali", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 546} },
+            { roll: 336997, name: "Komal Ghusar", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 697} },
+            { roll: 336998, name: "Manish Gurjar", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: 45, hema: 55, path: 54, total: 681} },
+            { roll: 336999, name: "Manoj Kumar Verma", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 511} },
+            { roll: 337000, name: "Ms. Mamta Daroga", status: "FAIL", category: "MLD", remark: "Absent in Practical", marks: {anat: '-', hema: '-', path: '-', total: 535} },
+            { roll: 337001, name: "Naresh", status: "FAIL", category: "MLD", remark: "Back in Anat, Path", marks: {anat: '-', hema: '-', path: '-', total: 574} },
+            { roll: 337002, name: "Niharika Prajapat", status: "FAIL", category: "MLD", remark: "Back in Anat, Path", marks: {anat: '-', hema: '-', path: '-', total: 690} },
+            { roll: 337003, name: "Nikita Chhipa", status: "FAIL", category: "MLD", remark: "Back in Anat, Path", marks: {anat: '-', hema: '-', path: '-', total: 705} },
+            { roll: 337004, name: "Nitesh Kumar Verma", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 519} },
+            { roll: 337005, name: "Pooja Gurjar", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 622} },
+            { roll: 337006, name: "Prachi Joshi", status: "FAIL", category: "MLD", remark: "Back in Anat", marks: {anat: '-', hema: '-', path: '-', total: 756} },
+            { roll: 337007, name: "Priyanka Bheel", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 575} },
+            { roll: 337008, name: "Ramphool Gurjar", status: "FAIL", category: "MLD", remark: "Fail (Absent/Low Score)", marks: {anat: '-', hema: '-', path: '-', total: 387} },
+            { roll: 337009, name: "Rekha Kumari Kumawat", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 540} },
+            { roll: 337010, name: "Ritu Raj Regar", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 459} },
+            { roll: 337011, name: "Saddam Husain", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 632} },
+            { roll: 337012, name: "Sakshi", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 674} },
+            { roll: 337013, name: "Saloni Kumawat", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 556} },
+            { roll: 337014, name: "Seema Choudhary", status: "FAIL", category: "MLD", remark: "Absent in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 386} },
+            { roll: 337015, name: "Shalu Prajapati", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: 63, hema: 60, path: 53, total: 769} },
+            { roll: 337016, name: "Shankar Gurjar", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 496} },
+            { roll: 337017, name: "Tamanna Bano", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 548} },
+            { roll: 337018, name: "Vijay Kumar Meena", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 569} },
+            { roll: 337019, name: "Vijayraj Meghwal", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 589} },
+            { roll: 337020, name: "Vikas Kumar Mina", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 445} },
+            { roll: 337021, name: "Yuvraj", status: "FAIL", category: "MLD", remark: "Back in Anat, Hema", marks: {anat: '-', hema: '-', path: '-', total: 571} },
+            { roll: 337022, name: "Yuvraj Singh Rawat", status: "FAIL", category: "MLD", remark: "Fail in All Theory", marks: {anat: '-', hema: '-', path: '-', total: 510} },
+            { roll: 337023, name: "Zheer Ahmed", status: "PASS", category: "MLD", remark: "Clear", marks: {anat: 49, hema: 62, path: 49, total: 737} },
 
-            // --- TRIVENI COLLEGE (Total 47: 7 Pass, 40 Fail) ---
-            { roll: 341150, name: "Sapna Regar", status: "PASS", category: "Triveni", marks: {anat: 54, hema: 56, path: 64, total: 827} },
-            { roll: 341142, name: "Rajendra Gurjar", status: "PASS", category: "Triveni", marks: {anat: 57, hema: 45, path: 56, total: 821} },
-            { roll: 341123, name: "Kamlesh Bairwa", status: "PASS", category: "Triveni", marks: {anat: 41, hema: 46, path: 56, total: 802} },
-            { roll: 341138, name: "Payal Choudhary", status: "PASS", category: "Triveni", marks: {anat: 70, hema: 42, path: 45, total: 797} },
-            { roll: 341120, name: "Kailash", status: "PASS", category: "Triveni", marks: {anat: 64, hema: 41, path: 46, total: 748} },
-            { roll: 341137, name: "Ojasvi Jain", status: "PASS", category: "Triveni", marks: {anat: 49, hema: 45, path: 41, total: 748} },
-            { roll: 341121, name: "Kajol Sen", status: "PASS", category: "Triveni", marks: {anat: 45, hema: 46, path: 63, total: 741} },
-            
-            // Triveni Failures
-            { roll: 341108, name: "Abhishek Kumawat", status: "FAIL", category: "Triveni" },
-            { roll: 341109, name: "Akshita Vaishnav", status: "FAIL", category: "Triveni" },
-            { roll: 341110, name: "Anirudd Sankhala", status: "FAIL", category: "Triveni" },
-            { roll: 341111, name: "Ankush Kumar Gurjar", status: "FAIL", category: "Triveni" },
-            { roll: 341112, name: "Arsad Khan", status: "FAIL", category: "Triveni" },
-            { roll: 341113, name: "Ashish Nagar", status: "FAIL", category: "Triveni" },
-            { roll: 341114, name: "Balram Nama", status: "FAIL", category: "Triveni" },
-            { roll: 341115, name: "Dashrath Singh", status: "FAIL", category: "Triveni" },
-            { roll: 341116, name: "Deepak Kumar Saini", status: "FAIL", category: "Triveni" },
-            { roll: 341117, name: "Dilkhush Prajapat", status: "FAIL", category: "Triveni" },
-            { roll: 341118, name: "Dinesh Prajapat", status: "FAIL", category: "Triveni" },
-            { roll: 341119, name: "Hameed Kathat", status: "FAIL", category: "Triveni" },
-            { roll: 341122, name: "Kamal Choudhary", status: "FAIL", category: "Triveni" },
-            { roll: 341124, name: "Kapil Sharma", status: "FAIL", category: "Triveni" },
-            { roll: 341125, name: "Khushbu Kumari Saini", status: "FAIL", category: "Triveni" },
-            { roll: 341126, name: "Komal Kumari Nath", status: "FAIL", category: "Triveni" },
-            { roll: 341127, name: "Krishna Jangid", status: "FAIL", category: "Triveni" },
-            { roll: 341128, name: "Laxman Meena", status: "FAIL", category: "Triveni" },
-            { roll: 341129, name: "Manish Chouhan", status: "FAIL", category: "Triveni" },
-            { roll: 341130, name: "Manoj Kumar Gusaiwal", status: "FAIL", category: "Triveni" },
-            { roll: 341131, name: "Manoj Kumar Verma", status: "FAIL", category: "Triveni" },
-            { roll: 341132, name: "Mayank Kumar Sharma", status: "FAIL", category: "Triveni" },
-            { roll: 341133, name: "Meena Kumari", status: "FAIL", category: "Triveni" },
-            { roll: 341134, name: "Mohammad Junaid", status: "FAIL", category: "Triveni" },
-            { roll: 341135, name: "Mohit Kumar Saini", status: "FAIL", category: "Triveni" },
-            { roll: 341136, name: "Ms. Ruchika Sharma", status: "FAIL", category: "Triveni" },
-            { roll: 341139, name: "Priyadarshni Rathore", status: "FAIL", category: "Triveni" },
-            { roll: 341140, name: "Priyanka Bairwa", status: "FAIL", category: "Triveni" },
-            { roll: 341141, name: "Radhika Mali", status: "FAIL", category: "Triveni" },
-            { roll: 341143, name: "Rakesh Kumawat", status: "FAIL", category: "Triveni" },
-            { roll: 341144, name: "Ram Avtar Dhaker", status: "FAIL", category: "Triveni" },
-            { roll: 341145, name: "Ravi Kumar Mali", status: "FAIL", category: "Triveni" },
-            { roll: 341146, name: "Raviraj Meena", status: "FAIL", category: "Triveni" },
-            { roll: 341147, name: "Rena Dhakar", status: "FAIL", category: "Triveni" },
-            { roll: 341148, name: "Renuka Vaishnav", status: "FAIL", category: "Triveni" },
-            { roll: 341149, name: "Sapna Kumari", status: "FAIL", category: "Triveni" },
-            { roll: 341151, name: "Sourabh Dadhich", status: "FAIL", category: "Triveni" },
-            { roll: 341152, name: "Sourabh Sharma", status: "FAIL", category: "Triveni" },
-            { roll: 341153, name: "Subash Puniya", status: "FAIL", category: "Triveni" },
-            { roll: 341154, name: "Vandna Rao", status: "FAIL", category: "Triveni" }
+            // --- TRIVENI COLLEGE (Detailed List 49 Students) ---
+            { roll: 341106, name: "Abhay Soni", status: "FAIL", category: "Triveni", remark: "All Absent", marks: {anat: 'AB', hema: 'AB', path: 'AB', total: 383} },
+            { roll: 341107, name: "Abhishek Dara", status: "FAIL", category: "Triveni", remark: "Back: Anat, Hema", marks: {anat: '37*', hema: '16*', path: '53', total: 589} },
+            { roll: 341108, name: "Abhishek Kumawat", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '05', hema: '03', path: '03', total: 394} },
+            { roll: 341109, name: "Akshita Vaishnav", status: "FAIL", category: "Triveni", remark: "Back: Anat, Hema", marks: {anat: '34*', hema: '23', path: '47', total: 759} },
+            { roll: 341110, name: "Anirudd Sankhala", status: "FAIL", category: "Triveni", remark: "All Absent", marks: {anat: 'AB', hema: 'AB', path: 'AB', total: 383} },
+            { roll: 341111, name: "Ankush Kumar", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '20', hema: '10', path: '24', total: 649} },
+            { roll: 341112, name: "Arsad Khan", status: "FAIL", category: "Triveni", remark: "Back: Anat, Hema", marks: {anat: '12', hema: '18', path: '45', total: 590} },
+            { roll: 341113, name: "Ashish Nagar", status: "FAIL", category: "Triveni", remark: "Back: Anat", marks: {anat: '15*', hema: '53', path: '45', total: 723} },
+            { roll: 341114, name: "Balram Nama", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '26', hema: '10', path: '09', total: 535} },
+            { roll: 341115, name: "Dashrath Singh", status: "FAIL", category: "Triveni", remark: "All Absent", marks: {anat: 'AB', hema: 'AB', path: 'AB', total: 383} },
+            { roll: 341116, name: "Deepak Kumar", status: "FAIL", category: "Triveni", remark: "Back: Anat, Path", marks: {anat: '30', hema: '47', path: '26', total: 711} },
+            { roll: 341117, name: "Dilkhush Prajapat", status: "FAIL", category: "Triveni", remark: "Back: Hema, Path", marks: {anat: '45', hema: '29', path: '21', total: 645} },
+            { roll: 341118, name: "Dinesh Prajapat", status: "FAIL", category: "Triveni", remark: "Back: Anat, Path", marks: {anat: '17', hema: '45', path: '20', total: 575} },
+            { roll: 341119, name: "Hameed Kathat", status: "FAIL", category: "Triveni", remark: "Back: Anat, Path", marks: {anat: '15', hema: '47', path: '38', total: 632} },
+            { roll: 341120, name: "Kailash", status: "PASS", category: "Triveni", remark: "Clear", marks: {anat: '64', hema: '41 G', path: '46', total: 748} },
+            { roll: 341121, name: "Kajol Sen", status: "PASS", category: "Triveni", remark: "Clear", marks: {anat: '45', hema: '46', path: '63', total: 741} },
+            { roll: 341122, name: "Kamal Choudhary", status: "FAIL", category: "Triveni", remark: "Back: Anat", marks: {anat: '14', hema: '51', path: '47', total: 718} },
+            { roll: 341123, name: "Kamlesh Bairwa", status: "PASS", category: "Triveni", remark: "Clear", marks: {anat: '41 G', hema: '46', path: '56', total: 802} },
+            { roll: 341124, name: "Kapil Sharma", status: "FAIL", category: "Triveni", remark: "Back: Anat", marks: {anat: '28*', hema: '75', path: '56', total: 881} },
+            { roll: 341125, name: "Khushbu Saini", status: "FAIL", category: "Triveni", remark: "Back: Anat, Hema", marks: {anat: '25', hema: '20', path: '46', total: 613} },
+            { roll: 341126, name: "Komal Kumari", status: "FAIL", category: "Triveni", remark: "Back: Anat, Hema", marks: {anat: '24', hema: '28', path: '55', total: 650} },
+            { roll: 341127, name: "Krishna Jangid", status: "FAIL", category: "Triveni", remark: "Back: Hema", marks: {anat: '53', hema: '33', path: '48', total: 792} },
+            { roll: 341128, name: "Laxman Meena", status: "FAIL", category: "Triveni", remark: "Back: Hema", marks: {anat: '67', hema: '35', path: '64', total: 768} },
+            { roll: 341129, name: "Manish Chouhan", status: "FAIL", category: "Triveni", remark: "All Absent", marks: {anat: 'AB', hema: 'AB', path: 'AB', total: 384} },
+            { roll: 341130, name: "Manoj Gusaiwal", status: "FAIL", category: "Triveni", remark: "Back: Hema, Path", marks: {anat: '45', hema: '24', path: '25*', total: 739} },
+            { roll: 341131, name: "Manoj Verma", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '23', hema: '15', path: '24', total: 725} },
+            { roll: 341132, name: "Mayank Sharma", status: "FAIL", category: "Triveni", remark: "Back: Hema, Path", marks: {anat: '55', hema: '26*', path: '38*', total: 764} },
+            { roll: 341133, name: "Meena Kumari", status: "FAIL", category: "Triveni", remark: "All Absent", marks: {anat: 'AB', hema: 'AB', path: 'AB', total: 387} },
+            { roll: 341134, name: "Moh. Junaid", status: "FAIL", category: "Triveni", remark: "Back: Anat, Path", marks: {anat: '21', hema: '47', path: '25*', total: 686} },
+            { roll: 341135, name: "Mohit Saini", status: "FAIL", category: "Triveni", remark: "Back: Anat", marks: {anat: '39', hema: '45', path: '45', total: 776} },
+            { roll: 341136, name: "Ruchika Sharma", status: "FAIL", category: "Triveni", remark: "Back: Hema, Path", marks: {anat: '47', hema: '40*', path: '36', total: 791} },
+            { roll: 341137, name: "Ojasvi Jain", status: "PASS", category: "Triveni", remark: "Clear", marks: {anat: '49', hema: '45', path: '41 G', total: 748} },
+            { roll: 341138, name: "Payal Choudhary", status: "PASS", category: "Triveni", remark: "Clear", marks: {anat: '70', hema: '42 G', path: '45', total: 797} },
+            { roll: 341139, name: "Priyadarshni", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '43*', hema: '42', path: '35', total: 721} },
+            { roll: 341140, name: "Priyanka Bairwa", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '26', hema: '10', path: '30', total: 650} },
+            { roll: 341141, name: "Radhika Mali", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '40', hema: '11', path: '14', total: 675} },
+            { roll: 341142, name: "Rajendra Gurjar", status: "PASS", category: "Triveni", remark: "Clear", marks: {anat: '57', hema: '45', path: '56', total: 821} },
+            { roll: 341143, name: "Rakesh Kumawat", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '22', hema: '20', path: '25', total: 552} },
+            { roll: 341144, name: "Ram Avtar", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '35', hema: '22', path: '16', total: 729} },
+            { roll: 341145, name: "Ravi Mali", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '35', hema: '12', path: '13', total: 596} },
+            { roll: 341146, name: "Raviraj Meena", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '07', hema: '30', path: '05', total: 426} },
+            { roll: 341147, name: "Rena Dhakar", status: "FAIL", category: "Triveni", remark: "Back: Anat", marks: {anat: '19', hema: '45', path: '47', total: 719} },
+            { roll: 341148, name: "Renuka Vaishnav", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '27', hema: '21', path: '11', total: 556} },
+            { roll: 341149, name: "Sapna Kumari", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '34', hema: '29', path: '35', total: 701} },
+            { roll: 341150, name: "Sapna Regar", status: "PASS", category: "Triveni", remark: "Clear", marks: {anat: '54', hema: '56', path: '64', total: 827} },
+            { roll: 341151, name: "Sourabh Dadhich", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '30*', hema: '15', path: '35*', total: 616} },
+            { roll: 341152, name: "Sourabh Sharma", status: "FAIL", category: "Triveni", remark: "All Theory Fail", marks: {anat: '24', hema: '19', path: '34', total: 607} },
+            { roll: 341153, name: "Subash Puniya", status: "FAIL", category: "Triveni", remark: "Back: Hema, Path", marks: {anat: '45', hema: '27', path: '23*', total: 640} },
+            { roll: 341154, name: "Vandna Rao", status: "FAIL", category: "Triveni", remark: "All Absent", marks: {anat: 'AB', hema: 'AB', path: 'AB', total: 385} }
         ];
 
         let currentFilter = 'all';
-        let sortDirection = { roll: 'asc', name: 'asc', status: 'asc', category: 'asc' };
+        let sortDirection = { roll: 'asc', name: 'asc', status: 'asc', category: 'asc', total: 'desc' };
 
         // DOM
         const tableBody = document.getElementById('resultTableBody');
@@ -412,7 +427,7 @@
         function renderTable(data) {
             tableBody.innerHTML = '';
             if (data.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-gray-400">No records found</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-gray-400">No records found</td></tr>`;
                 return;
             }
 
@@ -424,6 +439,12 @@
                 
                 const catColor = student.category === 'Triveni' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-orange-50 text-orange-700 border-orange-100';
                 
+                // Calculate percentage for table view
+                let percentage = "0.00";
+                if(student.marks && student.marks.total && student.marks.total !== '-') {
+                     percentage = ((student.marks.total / 1150) * 100).toFixed(2);
+                }
+
                 const row = document.createElement('tr');
                 row.className = "hover:bg-gray-50 transition duration-150 cursor-pointer border-b border-gray-100 animate-fade-in";
                 row.style.animationDelay = `${index * 0.01}s`;
@@ -433,6 +454,10 @@
                     <td class="px-6 py-4 text-sm font-mono text-gray-600 font-medium">${student.roll}</td>
                     <td class="px-6 py-4 text-sm font-bold text-gray-700">${student.name}</td>
                     <td class="px-6 py-4 text-center"><span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wide rounded border ${catColor}">${student.category}</span></td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="text-sm font-bold text-gray-700">${student.marks.total}</div>
+                        <div class="text-[10px] font-semibold text-gray-400">(${percentage}%)</div>
+                    </td>
                     <td class="px-6 py-4 text-center">${statusBadge}</td>
                     <td class="px-6 py-4 text-center"><button class="text-teal-600 hover:text-teal-800 transition transform hover:scale-110"><i class="fas fa-chevron-right"></i></button></td>
                 `;
@@ -442,8 +467,8 @@
 
         // --- Toppers Logic ---
         function renderToppers() {
-            // Filter PASS students only
-            const passStudents = studentsData.filter(s => s.status === 'PASS' && s.marks);
+            // Filter PASS students only for Toppers List
+            const passStudents = studentsData.filter(s => s.status === 'PASS' && s.marks && s.marks.total !== '-');
 
             // Separate and sort by Total Marks
             const triveniToppers = passStudents.filter(s => s.category === 'Triveni').sort((a, b) => b.marks.total - a.marks.total);
@@ -467,6 +492,11 @@
 
                 // Percentage Calculation (Total / 1150 * 100)
                 const percentage = ((student.marks.total / 1150) * 100).toFixed(2);
+                
+                // Subject marks or Placeholder
+                const anat = student.marks.anat === '-' ? '<span class="text-gray-300">-</span>' : student.marks.anat;
+                const hema = student.marks.hema === '-' ? '<span class="text-gray-300">-</span>' : student.marks.hema;
+                const path = student.marks.path === '-' ? '<span class="text-gray-300">-</span>' : student.marks.path;
 
                 return `
                 <div class="flex items-center gap-4 p-4 rounded-lg border shadow-sm ${cardClass} hover:shadow-md transition-shadow cursor-pointer" onclick='openModal(${JSON.stringify(student)})'>
@@ -478,15 +508,15 @@
                         <div class="grid grid-cols-3 gap-2 mt-3 text-center">
                             <div class="bg-white/60 rounded px-1 py-0.5 border border-gray-100">
                                 <div class="text-[10px] text-gray-500 uppercase">Anat</div>
-                                <div class="font-bold text-sm text-teal-700">${student.marks.anat}</div>
+                                <div class="font-bold text-sm text-teal-700">${anat}</div>
                             </div>
                             <div class="bg-white/60 rounded px-1 py-0.5 border border-gray-100">
                                 <div class="text-[10px] text-gray-500 uppercase">Hema</div>
-                                <div class="font-bold text-sm text-teal-700">${student.marks.hema}</div>
+                                <div class="font-bold text-sm text-teal-700">${hema}</div>
                             </div>
                             <div class="bg-white/60 rounded px-1 py-0.5 border border-gray-100">
                                 <div class="text-[10px] text-gray-500 uppercase">Path</div>
-                                <div class="font-bold text-sm text-teal-700">${student.marks.path}</div>
+                                <div class="font-bold text-sm text-teal-700">${path}</div>
                             </div>
                         </div>
                     </div>
@@ -509,6 +539,13 @@
             sortDirection[key] = dir;
             studentsData.sort((a, b) => {
                 let valA = a[key], valB = b[key];
+                
+                // Handle nested marks.total sort
+                if(key === 'total') {
+                     valA = a.marks && a.marks.total !== '-' ? a.marks.total : 0;
+                     valB = b.marks && b.marks.total !== '-' ? b.marks.total : 0;
+                }
+
                 if (typeof valA === 'string') valA = valA.toLowerCase();
                 if (typeof valB === 'string') valB = valB.toLowerCase();
                 if (valA < valB) return dir === 'asc' ? -1 : 1;
@@ -532,14 +569,32 @@
             document.getElementById('modalCategory').innerText = student.category;
             document.getElementById('modalIcon').innerHTML = icon;
 
-            // Handle Marks Display
+            // Handle Remark (Failed)
+            const remarkContainer = document.getElementById('modalRemarkContainer');
+            if(!isPass && student.remark) {
+                remarkContainer.classList.remove('hidden');
+                document.getElementById('modalRemark').innerText = student.remark;
+            } else {
+                remarkContainer.classList.add('hidden');
+            }
+
+            // Handle Marks Display (For both Pass and Fail if available)
             const marksContainer = document.getElementById('modalMarksContainer');
-            if (isPass && student.marks) {
+            if (student.marks) { 
                 marksContainer.classList.remove('hidden');
-                document.getElementById('markAnat').innerText = student.marks.anat;
-                document.getElementById('markHema').innerText = student.marks.hema;
-                document.getElementById('markPath').innerText = student.marks.path;
+                document.getElementById('markAnat').innerHTML = student.marks.anat === '-' ? '<span class="text-gray-300">-</span>' : student.marks.anat;
+                document.getElementById('markHema').innerHTML = student.marks.hema === '-' ? '<span class="text-gray-300">-</span>' : student.marks.hema;
+                document.getElementById('markPath').innerHTML = student.marks.path === '-' ? '<span class="text-gray-300">-</span>' : student.marks.path;
                 document.getElementById('markTotal').innerText = `${student.marks.total} / 1150`;
+
+                // Calculate percentage for modal
+                if(student.marks.total !== '-') {
+                     const p = ((student.marks.total / 1150) * 100).toFixed(2);
+                     document.getElementById('markPercent').innerText = `${p}%`;
+                } else {
+                     document.getElementById('markPercent').innerText = "";
+                }
+
             } else {
                 marksContainer.classList.add('hidden');
             }
